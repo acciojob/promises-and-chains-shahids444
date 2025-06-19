@@ -1,74 +1,306 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Voting Eligibility Form</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 30px;
-    }
-    label {
-      display: block;
-      margin: 10px 0 5px;
-    }
-    input {
-      padding: 8px;
-      width: 200px;
-    }
-    button {
-      margin-top: 15px;
-      padding: 10px 20px;
-      cursor: pointer;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Promises and Chains - Voting Eligibility</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            width: 100%;
+            max-width: 500px;
+            transform: translateY(0);
+            transition: all 0.3s ease;
+        }
+
+        .container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        input[type="text"]:hover,
+        input[type="number"]:hover {
+            border-color: #b8c6ea;
+            background: white;
+        }
+
+        #btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        #btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        #btn:active {
+            transform: translateY(0);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        #btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: loading 2s infinite;
+        }
+
+        @keyframes loading {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .form-description {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+            line-height: 1.5;
+        }
+
+        .input-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            font-size: 1.2em;
+        }
+
+        /* Custom alert styling simulation */
+        .custom-alert {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            display: none;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .alert-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            display: none;
+        }
+    </style>
 </head>
 <body>
+    <div class="container">
+        <h1>🗳️ Voting Eligibility</h1>
+        <p class="form-description">
+            Check if you're eligible to vote! Enter your details below and we'll verify your voting eligibility.
+        </p>
+        
+        <form id="votingForm">
+            <div class="form-group">
+                <label for="name">👤 Full Name</label>
+                <input type="text" id="name" placeholder="Enter your full name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="age">🎂 Age</label>
+                <input type="number" id="age" placeholder="Enter your age" min="1" max="120" required>
+            </div>
+            
+            <button type="submit" id="btn">Check Voting Eligibility</button>
+        </form>
+    </div>
 
-  <h2>Check Voting Eligibility</h2>
-  <form id="voteForm">
-    <label for="name">Name:</label>
-    <input type="text" id="name" />
+    <div class="alert-overlay" id="alertOverlay"></div>
+    <div class="custom-alert" id="customAlert">
+        <p id="alertMessage"></p>
+        <button onclick="closeAlert()" style="margin-top: 15px; padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer;">OK</button>
+    </div>
 
-    <label for="age">Age:</label>
-    <input type="number" id="age" />
+    <script>
+        // Get form elements
+        const form = document.getElementById('votingForm');
+        const nameInput = document.getElementById('name');
+        const ageInput = document.getElementById('age');
+        const submitBtn = document.getElementById('btn');
 
-    <button type="submit" id="btn">Submit</button>
-  </form>
+        // Function to show custom alert (for better UX, though we'll use regular alerts as required)
+        function showAlert(message) {
+            alert(message);
+        }
 
-  <script>
-    const form = document.getElementById("voteForm");
-    const nameInput = document.getElementById("name");
-    const ageInput = document.getElementById("age");
+        function closeAlert() {
+            document.getElementById('alertOverlay').style.display = 'none';
+            document.getElementById('customAlert').style.display = 'none';
+        }
 
-    form.addEventListener("submit", function(event) {
-      event.preventDefault(); // Prevent form from refreshing the page
+        // Function to create a promise for age validation
+        function checkVotingEligibility(name, age) {
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    if (age > 18) {
+                        resolve(`Welcome, ${name}. You can vote.`);
+                    } else {
+                        reject(`Oh sorry ${name}. You aren't old enough.`);
+                    }
+                }, 4000); // 4-second delay as required
+            });
+        }
 
-      const name = nameInput.value.trim();
-      const age = parseInt(ageInput.value.trim());
+        // Form submission handler
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault(); // Prevent default form submission
+            
+            // Get input values
+            const name = nameInput.value.trim();
+            const age = parseInt(ageInput.value);
+            
+            // Validation: Check if inputs are empty or invalid
+            if (!name || !age || age <= 0) {
+                showAlert("Please enter valid details.");
+                return;
+            }
+            
+            // Disable button and show loading state
+            submitBtn.disabled = true;
+            submitBtn.classList.add('loading');
+            submitBtn.textContent = 'Checking Eligibility...';
+            
+            try {
+                // Call the promise function
+                const message = await checkVotingEligibility(name, age);
+                showAlert(message); // Success case
+            } catch (error) {
+                showAlert(error); // Rejection case
+            } finally {
+                // Re-enable button and reset state
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('loading');
+                submitBtn.textContent = 'Check Voting Eligibility';
+            }
+        });
 
-      // Validation: Check for empty values
-      if (!name || isNaN(age)) {
-        alert("Please enter valid details.");
-        return;
-      }
+        // Add some interactive effects
+        nameInput.addEventListener('input', function() {
+            if (this.value.length > 0) {
+                this.style.borderColor = '#28a745';
+            } else {
+                this.style.borderColor = '#e1e5e9';
+            }
+        });
 
-      // Create and handle a Promise
-      const checkEligibility = new Promise((resolve, reject) => {
-        setTimeout(() => {
-          if (age > 18) {
-            resolve(`Welcome, ${name}. You can vote.`);
-          } else {
-            reject(`Oh sorry ${name}. You aren't old enough.`);
-          }
-        }, 4000);
-      });
+        ageInput.addEventListener('input', function() {
+            const age = parseInt(this.value);
+            if (age > 0 && age <= 120) {
+                this.style.borderColor = '#28a745';
+            } else {
+                this.style.borderColor = '#e1e5e9';
+            }
+        });
 
-      checkEligibility
-        .then(message => alert(message))
-        .catch(error => alert(error));
-    });
-  </script>
-
+        // Add enter key support
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !submitBtn.disabled) {
+                form.dispatchEvent(new Event('submit'));
+            }
+        });
+    </script>
 </body>
 </html>
