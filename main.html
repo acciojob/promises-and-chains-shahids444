@@ -1,13 +1,74 @@
 <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Voting Eligibility Form</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 30px;
+    }
+    label {
+      display: block;
+      margin: 10px 0 5px;
+    }
+    input {
+      padding: 8px;
+      width: 200px;
+    }
+    button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
 
-<html>
-  <head>
-    <link rel="stylesheet" href="styles.css" />
-  </head>
+  <h2>Check Voting Eligibility</h2>
+  <form id="voteForm">
+    <label for="name">Name:</label>
+    <input type="text" id="name" />
 
-  <body>
-    <!-- write the body here -->
+    <label for="age">Age:</label>
+    <input type="number" id="age" />
 
-    <script type="text/javascript" src="./script.js"></script>
-  </body>
+    <button type="submit" id="btn">Submit</button>
+  </form>
+
+  <script>
+    const form = document.getElementById("voteForm");
+    const nameInput = document.getElementById("name");
+    const ageInput = document.getElementById("age");
+
+    form.addEventListener("submit", function(event) {
+      event.preventDefault(); // Prevent form from refreshing the page
+
+      const name = nameInput.value.trim();
+      const age = parseInt(ageInput.value.trim());
+
+      // Validation: Check for empty values
+      if (!name || isNaN(age)) {
+        alert("Please enter valid details.");
+        return;
+      }
+
+      // Create and handle a Promise
+      const checkEligibility = new Promise((resolve, reject) => {
+        setTimeout(() => {
+          if (age > 18) {
+            resolve(`Welcome, ${name}. You can vote.`);
+          } else {
+            reject(`Oh sorry ${name}. You aren't old enough.`);
+          }
+        }, 4000);
+      });
+
+      checkEligibility
+        .then(message => alert(message))
+        .catch(error => alert(error));
+    });
+  </script>
+
+</body>
 </html>
